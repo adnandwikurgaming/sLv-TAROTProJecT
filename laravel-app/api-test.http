@@ -1,0 +1,104 @@
+### ==========================================
+### API TESTING — TAROT MYSTIC
+### ==========================================
+### Cara pakai:
+### 1. Install ekstensi "REST Client" di VS Code
+### 2. Buka file ini, klik "Send Request" di atas setiap endpoint
+### 3. Jalankan berurutan dari atas ke bawah
+###
+### Variabel otomatis:
+### @baseUrl = http://localhost:8080
+### ==========================================
+
+@baseUrl = http://localhost:8080
+
+### ============= 1. REGISTER =============
+### Mendaftarkan user baru
+### Method: POST
+### Body: form-data (name, email, password)
+
+# Langkah 1: ambil halaman register (untuk dapetin CSRF token)
+# Langkah 2: kirim data register
+# Langkah 3: otomatis redirect ke /dashboard kalau sukses
+
+POST {{baseUrl}}/register
+Content-Type: application/x-www-form-urlencoded
+
+name = Alucard
+& email = alucard@darkness.com
+& password = 123456
+& password_confirmation = 123456
+
+### ============= 2. LOGIN =============
+### Login dengan user yang sudah register
+### Method: POST
+### Body: form-data (email, password)
+
+POST {{baseUrl}}/login
+Content-Type: application/x-www-form-urlencoded
+
+email = alucard@darkness.com
+& password = 123456
+
+### ============= 3. DASHBOARD =============
+### Halaman utama setelah login
+### Method: GET
+### Menampilkan form draw + recent history
+
+GET {{baseUrl}}/dashboard
+
+### ============= 4. DRAW KARTU (Single) =============
+### Mengocok 1 kartu tarot
+### Method: POST
+### Body: spread_type = single | three-card
+
+POST {{baseUrl}}/draw
+Content-Type: application/x-www-form-urlencoded
+
+spread_type = single
+
+### ============= 5. DRAW KARTU (3 Kartu) =============
+### Mengocok 3 kartu tarot (Past, Present, Future)
+### Method: POST
+### Body: spread_type = three-card
+
+POST {{baseUrl}}/draw
+Content-Type: application/x-www-form-urlencoded
+
+spread_type = three-card
+
+### ============= 6. HISTORY =============
+### Melihat semua riwayat pembacaan kartu
+### Method: GET
+
+GET {{baseUrl}}/history
+
+### ============= 7. DETAIL HISTORY =============
+### Melihat detail pembacaan tertentu
+### Method: GET
+### Ganti angka 1 dengan ID reading yang mau dilihat
+
+GET {{baseUrl}}/history/1
+
+### ============= 8. LOGOUT =============
+### Keluar dari sesi
+### Method: POST
+
+POST {{baseUrl}}/logout
+
+### ==========================================
+### CARA KERJA .http FILE:
+### ==========================================
+### - Setiap blok dipisahkan oleh ###
+### - Baris pertama setelah ### adalah judul
+### - Method (GET/POST) diikuti URL
+### - Header ditulis sebagai Key: Value
+### - Body ditulis setelah header, dipisah baris kosong
+### - REST Client handle session cookie otomatis
+###   (cookie dari login otomatis dipakai di request berikutnya)
+###
+### CATATAN: CSRF Token
+### Karena kita pakai session cookie, CSRF protection
+### otomatis ter-handle oleh Laravel untuk request
+### dalam sesi yang sama (cookie session dikirim otomatis).
+### ==========================================
