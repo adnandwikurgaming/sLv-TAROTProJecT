@@ -15,6 +15,9 @@ class TarotController extends Controller
                            ->latest()
                            ->take(5)
                            ->get();
+
+        $this->loadCardsRelation($readings);
+
         return view('dashboard', compact('readings'));
     }
 
@@ -40,22 +43,40 @@ class TarotController extends Controller
     {
         $readings = Reading::where('user_id', Auth::id())
                            ->latest()
-                           ->get();
+                           ->paginate(15);
+
+        $this->loadCardsRelation($readings);
+
         return view('tarot.history', compact('readings'));
     }
 
     public function show($id)
     {
         $reading = Reading::where('user_id', Auth::id())->findOrFail($id);
-        
-        // $reading->cards_drawn is an array of card IDs
+
         $cardIds = $reading->cards_drawn;
-        
-        // We need to keep the order in which they were drawn
-        $cards = collect($cardIds)->map(function ($cardId) {
-            return Card::find($cardId);
-        });
+
+        $ids = implode(',', array_map('intval', $cardIds));
+        $cards = Card::whereIn('id', $cardIds)
+            ->orderByRaw("FIELD(id, $ids)")
+            ->get();
+
+        $reading->setRelation('cards', $cards);
 
         return view('tarot.show', compact('reading', 'cards'));
+    }
+
+    private function loadCardsRelation($readings)
+    {
+        if ($readings->isEmpty()) return;
+
+        $allCardIds = $readings->pluck('cards_drawn')->flatten()->unique()->values()->toArray();
+        $allCards = Card::whereIn('id', $allCardIds)->get()->keyBy('id');
+
+        $readings->each(function ($reading) use ($allCards) {
+            $ids = $reading->cards_drawn ?? [];
+            $ordered = collect($ids)->map(fn($id) => $allCards[$id] ?? null)->filter();
+            $reading->setRelation('cards', $ordered);
+        });
     }
 }

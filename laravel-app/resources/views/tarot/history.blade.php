@@ -21,7 +21,7 @@
                     <span class="text-zinc-500 text-xs font-medium">{{ $reading->created_at->format('d M Y, H:i') }}</span>
                 </div>
                 <div class="flex gap-4 flex-wrap">
-                    @foreach($reading->cards() as $card)
+                    @foreach($reading->cards as $card)
                         <div class="bg-zinc-900/50 border border-red-900/20 rounded-xl p-4 flex-1 min-w-[160px] text-center flex flex-col items-center group-hover:bg-zinc-900 transition-colors">
                             @if($card->image_url)
                                 <div class="w-16 h-24 mb-3 overflow-hidden rounded shadow-[0_0_10px_rgba(255,26,26,0.1)] border border-red-900/30">
@@ -46,4 +46,10 @@
             </a>
         </div>
     @endforelse
+
+    @if ($readings->hasPages())
+        <div class="mt-10">
+            {{ $readings->links() }}
+        </div>
+    @endif
 @endsection

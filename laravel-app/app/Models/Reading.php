@@ -21,8 +21,17 @@ class Reading extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function cards()
+    public function getCardsAttribute()
     {
-        return Card::whereIn('id', $this->cards_drawn)->get();
+        if ($this->relationLoaded('cards')) {
+            return $this->getRelation('cards');
+        }
+
+        $ids = $this->cards_drawn ?? [];
+        $cards = Card::whereIn('id', $ids)->get()->keyBy('id');
+        $ordered = collect($ids)->map(fn($id) => $cards[$id] ?? null)->filter();
+        $this->setRelation('cards', $ordered);
+
+        return $ordered;
     }
 }
